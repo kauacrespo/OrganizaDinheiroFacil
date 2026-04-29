@@ -1,23 +1,23 @@
 package com.OrganizaDinheiro.OrganizaDinheiro.controller;
 
+import com.OrganizaDinheiro.OrganizaDinheiro.service.JwtService;
 import com.OrganizaDinheiro.OrganizaDinheiro.service.OtpService;
 import com.OrganizaDinheiro.OrganizaDinheiro.service.SmsService;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
+@AllArgsConstructor
 public class AuthController {
+
     private final OtpService otpService;
     private final SmsService smsService;
+    private final JwtService jwtService;
 
-    public AuthController(OtpService otpService, SmsService smsService) {
-        this.otpService = otpService;
-        this.smsService = smsService;
-    }
-
-    @PostMapping("/sen-code")
+    @PostMapping("/send-code")
     public String senCode(@RequestBody Map<String, String> body){
 
         String phone = body.get("phone");
@@ -33,7 +33,8 @@ public class AuthController {
         String code = body.get("code");
 
         if (otpService.validateCode(phone, code)){
-            return "Login OK (gerar JWT aqui)";
+            String token = jwtService.genetareToken(phone);
+            return token;
         }
         return "Codigo invalido";
     }

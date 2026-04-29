@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -16,5 +18,8 @@ public class User {
     private Long id;
     private String name;
     private String phone;
+
+    @OneToMany(mappedBy = "userTransactions")
+    List<Transaction> transactions;
 }
 

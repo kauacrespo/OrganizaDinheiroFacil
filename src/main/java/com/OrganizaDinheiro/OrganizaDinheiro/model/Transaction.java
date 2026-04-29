@@ -19,4 +19,8 @@ public class Transaction {
     private Long id;
     private BigDecimal value;
     private String description;
+    private Category category;
+
+    @ManyToOne
+    User user;
 }
