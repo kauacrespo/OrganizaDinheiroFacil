@@ -22,5 +22,5 @@ public class Transaction {
     private Category category;
 
     @ManyToOne
-    User user;
+    private User user;
 }

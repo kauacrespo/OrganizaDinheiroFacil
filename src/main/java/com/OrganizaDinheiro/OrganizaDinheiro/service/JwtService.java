@@ -14,7 +14,7 @@ public class JwtService {
     private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
     //CRIA O METODO DE GERAR O TOKEN ALEATORIO COM BASE NO NUMERO DE TELEFONE INFORMADO
-    public String genetareToken(String phone){
+    public String generateToken(String phone){
         return Jwts.builder()
                 .setSubject(phone)
                 .setIssuedAt(new Date())
