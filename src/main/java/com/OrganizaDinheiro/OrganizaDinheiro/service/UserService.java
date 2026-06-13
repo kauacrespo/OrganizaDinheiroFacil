@@ -1,9 +1,13 @@
 package com.OrganizaDinheiro.OrganizaDinheiro.service;
 
+import com.OrganizaDinheiro.OrganizaDinheiro.dto.LoginRequest;
+import com.OrganizaDinheiro.OrganizaDinheiro.dto.RegisterRequest;
 import com.OrganizaDinheiro.OrganizaDinheiro.model.User;
 import com.OrganizaDinheiro.OrganizaDinheiro.repositoy.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Service
 @RequiredArgsConstructor
@@ -13,16 +17,18 @@ public class UserService {
 
     private final JwtService jwtService;
 
-    public User registerUser(String name, String phone,String password){
+    private final PasswordEncoder passwordEncoder;
 
-        if (userRepository.existsByPhone(phone)){
+    public User registerUser(RegisterRequest request){
+
+        if (userRepository.existsByPhone(request.getPhone())){
             throw new RuntimeException("Usuario Ja cadastrado");
         }
 
         User user = new User();
-        user.setName(name);
-        user.setPhone(phone);
-        user.setPassword(password);
+        user.setName(request.getName());
+        user.setPhone(request.getPhone());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         System.out.println("Usuario registrado!");
         return userRepository.save(user);
@@ -38,16 +44,16 @@ public class UserService {
         }
     }
 
-    public String validateLoginAndPassword(String phone, String password){
+    public String validateLoginAndPassword(LoginRequest loginRequest){
 
-        if (userRepository.findByPhone(phone).isEmpty()){
+        if (userRepository.findByPhone(loginRequest.getPhone()).isEmpty()){
           throw new RuntimeException("Usuario nao encontrado");
        }
 
-        User user = userRepository.findByPhone(phone).get();
+        User user = userRepository.findByPhone(loginRequest.getPhone()).get();
 
-       if (password.equals(user.getPassword())){
-           return jwtService.generateToken(phone);
+       if (passwordEncoder.matches(loginRequest.getPassword(),user.getPassword())){
+           return jwtService.generateToken(loginRequest.getPhone());
        }else  {
            throw new RuntimeException("Senha incorreta");
        }

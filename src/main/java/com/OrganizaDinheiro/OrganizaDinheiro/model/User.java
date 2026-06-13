@@ -25,6 +25,6 @@ public class User {
 
 
     @OneToMany(mappedBy = "userTransactions")
-    List<Transaction> transactions;
+    List<Expense> Expenses;
 }
 

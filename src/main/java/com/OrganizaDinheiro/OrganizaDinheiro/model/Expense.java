@@ -6,21 +6,26 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
-@Data
-@NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "transactions")
-public class Transaction {
+@NoArgsConstructor
+@Data
+public class Expense {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private BigDecimal value;
     private String description;
+    private BigDecimal value;
+    @Enumerated(EnumType.STRING)
     private Category category;
+    private LocalDate date;
+    private String name;
 
     @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
+
 }
