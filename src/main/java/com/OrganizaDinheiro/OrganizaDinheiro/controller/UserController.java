@@ -10,10 +10,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/User")
 public class UserController {
 
-
     @GetMapping
     public ResponseEntity<LoginRequest> userLogin(){
-
         return ResponseEntity.status(200).body(new LoginRequest());
     }
 }

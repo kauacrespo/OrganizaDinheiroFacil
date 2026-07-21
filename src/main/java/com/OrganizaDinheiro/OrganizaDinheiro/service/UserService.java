@@ -53,7 +53,7 @@ public class UserService {
         User user = userRepository.findByPhone(loginRequest.getPhone()).get();
 
        if (passwordEncoder.matches(loginRequest.getPassword(),user.getPassword())){
-           return jwtService.generateToken(loginRequest.getPhone());
+           return jwtService.generateToken(user.getId());
        }else  {
            throw new RuntimeException("Senha incorreta");
        }

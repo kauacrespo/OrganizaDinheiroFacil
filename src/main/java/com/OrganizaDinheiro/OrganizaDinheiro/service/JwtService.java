@@ -13,10 +13,11 @@ public class JwtService {
     private final String SECRET = "sua-chave-com-32-caracteres-no-minimo";
     private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
+
     //CRIA O METODO DE GERAR O TOKEN ALEATORIO COM BASE NO NUMERO DE TELEFONE INFORMADO
-    public String generateToken(String phone){
+    public String generateToken(Long userId){
         return Jwts.builder()
-                .setSubject(phone)
+                .setSubject(userId.toString())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // dia
                 .signWith(key, SignatureAlgorithm.HS256)

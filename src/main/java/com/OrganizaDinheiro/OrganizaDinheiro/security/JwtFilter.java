@@ -7,7 +7,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.io.IOException;
+
 import java.util.List;
 
 public class JwtFilter implements Filter {
@@ -31,14 +31,14 @@ public class JwtFilter implements Filter {
         if (header != null && header.startsWith("Bearer ")) {
             try {
                 String token = header.substring(7);
-                String phone = jwtService.validateToken(token);
+                String userId = jwtService.validateToken(token);
 
                 // DEFINE PERMISSOES DO USUSARIO (ROLE BASICA)
                 var authorities = List.of(new SimpleGrantedAuthority("USER"));
 
                 //CRIA UM OBJETO QUE REPRESENTA USUARIO AUTENTICADO
                 UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(phone,null, authorities);
+                        new UsernamePasswordAuthenticationToken(userId,null, authorities);
 
                 //REGISTRA USUARIO NO CONTEXTO DO SPRING(ESSENCIAL)
                 SecurityContextHolder.getContext().setAuthentication(auth);

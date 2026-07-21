@@ -1,42 +1,79 @@
 package com.OrganizaDinheiro.OrganizaDinheiro.service;
 
 import com.OrganizaDinheiro.OrganizaDinheiro.dto.ExpenseRequest;
+import com.OrganizaDinheiro.OrganizaDinheiro.model.Category;
 import com.OrganizaDinheiro.OrganizaDinheiro.model.Expense;
-import com.OrganizaDinheiro.OrganizaDinheiro.model.User;
 import com.OrganizaDinheiro.OrganizaDinheiro.repositoy.ExpenseRepository;
 import com.OrganizaDinheiro.OrganizaDinheiro.repositoy.UserRepository;
-import java.math.BigDecimal;
+import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+@Service
 public class ExpenseService {
 
     final private ExpenseRepository expenseRepository;
 
     final private UserRepository userRepository;
 
-    public ExpenseService(ExpenseRepository expenseRepository, UserRepository userRepository) {
+
+    public ExpenseService(ExpenseRepository expenseRepository, UserRepository userRepository, Expense expense) {
         this.expenseRepository = expenseRepository;
         this.userRepository = userRepository;
+
     }
 
-    public Expense createExpense(ExpenseRequest request,Long userId) {
 
-        User user = userRepository.findById(userId)
+    void verifyUser(Long userID){
+        userRepository.findById(userID)
                 .orElseThrow(() -> new RuntimeException("Usuario nao encontrado"));
+    }
 
-        if(request.getValue().compareTo(BigDecimal.ZERO) <= 0){
-            throw new RuntimeException("O valor deve ser maior que zero");
+    void verifyExpense(Long expenseID,Long userID){
+        expenseRepository.findById(expenseID)
+                .orElseThrow(() -> new RuntimeException("Expense nao encontrado"));
+        if(expenseRepository.equals(userID)){
 
-        }
+        };
+    }
 
-        Expense  expense = new Expense();
-        expense.setCategory(request.getCategory());
-        expense.setDate(request.getDate());
-        expense.setValue(request.getValue());
-        expense.setName(request.getName());
-        expense.setDescription(request.getDescription());
+    public List<Expense> getExpenses(Long userId) {
+        verifyUser(userId);
+        return expenseRepository.findByUserId(userId);
+    }
 
-        expense.setUser(user);
+    public List<Expense> getExpensesByCategory(Long userId, Category category) {
+        verifyUser(userId);
+        return expenseRepository.findByUserAndCategoryAndUserId(userId,category);
+    }
 
-        return expenseRepository.save(expense);
+    public List<Expense> getExpensesByDate(Long userId, LocalDate date) {
+        verifyUser(userId);
+        return expenseRepository.findByUserAndDateAndUserId(userId,date );
+    }
+
+    public Optional<Expense> getExpenseById(Long userId, Long id) {
+        verifyUser(userId);
+        verifyExpense(userId);
+        return expenseRepository.findByIdUser(id);
+
+    }
+
+    public Optional<Expense> updateExpenseById(Long id, ExpenseRequest expense, Long userId) {
+        verifyUser(userId);
+        verifyExpense(userId);
+        expense.setCategory(expense.getCategory());
+        expense.setDate(expense.getDate());
+        expense.setValue(expense.getValue());
+        expense.setName(expense.getName());
+        expenseRepository.save(expense);
+        return expenseRepository.findByIdUser(id);
+    }
+
+    public void deleteExpenseById(Long id , Long userId) {
+        verifyUser(userId);
+        expenseRepository.deleteById(id);
     }
 }

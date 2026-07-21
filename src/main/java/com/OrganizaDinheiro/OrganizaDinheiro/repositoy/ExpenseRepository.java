@@ -10,11 +10,15 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ExpenseRepository extends JpaRepository<Expense, Long> {
-    List<Expense> findByUser(User user);
+    List<Expense> findByUserId(Long userid);
 
-    List<Expense>findByUserAndCategory(User user,Category category);
+    List<Expense>findByUserAndCategoryAndUserId(Long userId,Category category);
 
-    List<Expense> findByUserAndDate(User user,LocalDate date);
+    List<Expense> findByUserAndDateAndUserId(Long userId,LocalDate date);
 
-    Optional<Expense> findByUserAndName(User user,String name);
+    Optional<Expense> findByUserAndNameAndUserId(Long userId,String name);
+
+    Optional<Expense> findByIdUser(Long id);
+
+
 }
