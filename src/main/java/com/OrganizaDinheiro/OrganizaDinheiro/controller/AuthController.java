@@ -3,6 +3,8 @@ package com.OrganizaDinheiro.OrganizaDinheiro.controller;
 import com.OrganizaDinheiro.OrganizaDinheiro.dto.LoginRequest;
 import com.OrganizaDinheiro.OrganizaDinheiro.dto.RegisterRequest;
 import com.OrganizaDinheiro.OrganizaDinheiro.dto.SendCodeRequest;
+import com.OrganizaDinheiro.OrganizaDinheiro.model.User;
+import com.OrganizaDinheiro.OrganizaDinheiro.repositoy.UserRepository;
 import com.OrganizaDinheiro.OrganizaDinheiro.service.JwtService;
 import com.OrganizaDinheiro.OrganizaDinheiro.service.OtpService;
 import com.OrganizaDinheiro.OrganizaDinheiro.service.SmsService;
@@ -21,6 +23,7 @@ public class AuthController {
     private final SmsService smsService;
     private final UserService userService;
     private final JwtService jwtService;
+    private final UserRepository userRepository;
 
     @PostMapping("/send-code")
     public ResponseEntity<String> sendCode(@RequestBody SendCodeRequest sendCodeRequest) {
@@ -38,7 +41,9 @@ public class AuthController {
         String code = sendCodeRequest.getCode();
 
         if (otpService.validateCode(phone, code)) {
-            String token = jwtService.generateToken(phone);
+           User user = userRepository.findByPhone(phone)
+                   .orElseThrow(() -> new RuntimeException("Usuario nao encontrado"));
+           String token = jwtService.generateToken(user.getId());
             return ResponseEntity.status(200).body(token);
         }
         return ResponseEntity.status(401).build();

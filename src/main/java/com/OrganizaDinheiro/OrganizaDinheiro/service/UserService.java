@@ -7,7 +7,8 @@ import com.OrganizaDinheiro.OrganizaDinheiro.repositoy.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,12 +20,12 @@ public class UserService {
 
     private final PasswordEncoder passwordEncoder;
 
+
     public User registerUser(RegisterRequest request){
 
         if (userRepository.existsByPhone(request.getPhone())){
             throw new RuntimeException("Usuario Ja cadastrado");
         }
-
         User user = new User();
         user.setName(request.getName());
         user.setPhone(request.getPhone());
@@ -34,7 +35,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public boolean searchByPhone(String phone){
+    public boolean existsByPhone(String phone){
         if (userRepository.existsByPhone(phone)){
             System.out.println("telefone Ja exite no sistema");
             return userRepository.existsByPhone(phone);
@@ -57,5 +58,10 @@ public class UserService {
        }else  {
            throw new RuntimeException("Senha incorreta");
        }
+    }
+
+    public Optional<User> findUserByPhone(String phone,User user){
+        Long userId = user.getId();
+        return userRepository.findByPhone(phone);
     }
 }

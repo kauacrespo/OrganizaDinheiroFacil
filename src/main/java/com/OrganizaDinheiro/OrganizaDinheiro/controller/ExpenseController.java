@@ -7,6 +7,7 @@ import com.OrganizaDinheiro.OrganizaDinheiro.service.ExpenseService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -35,9 +36,9 @@ public class ExpenseController {
     }
 
     @PostMapping()
-    public ResponseEntity<ExpenseRequest> createExpense(@RequestBody ExpenseRequest request) {
-        expenseService.createExpense(request, getCurrentUserId());
-       return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<ExpenseRequest> createExpense(@Validated @RequestBody ExpenseRequest request) {
+        expenseService.createExpense(getCurrentUserId(), request);
+       return ResponseEntity.status(HttpStatus.CREATED).body(request);
     }
 
     @GetMapping()
@@ -61,13 +62,13 @@ public class ExpenseController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Optional<Expense>> updateExpenseById(@PathVariable("id") Long expenseId,@RequestBody ExpenseRequest request) {
+    public ResponseEntity<Expense> updateExpenseById(@PathVariable("id") Long expenseId,@Validated @RequestBody ExpenseRequest request) {
         expenseService.updateExpenseById(expenseId,request,getCurrentUserId());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @DeleteMapping
-    public ResponseEntity<Expense> deleteExpenseById(Long expenseId) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Expense> deleteExpenseById(@PathVariable("id") Long expenseId) {
         expenseService.deleteExpenseById(getCurrentUserId(),expenseId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
