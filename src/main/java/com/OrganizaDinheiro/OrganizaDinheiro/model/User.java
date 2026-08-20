@@ -17,13 +17,12 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String phone;
-    private String password;
     private LocalDateTime createdAt;
 
 
-    @OneToMany(mappedBy = "userTransactions")
+    @OneToMany(mappedBy = "user")
     List<Expense> Expenses;
 }
 

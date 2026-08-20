@@ -1,13 +1,12 @@
 package com.OrganizaDinheiro.OrganizaDinheiro.service;
 
-import com.OrganizaDinheiro.OrganizaDinheiro.dto.LoginRequest;
-import com.OrganizaDinheiro.OrganizaDinheiro.dto.RegisterRequest;
 import com.OrganizaDinheiro.OrganizaDinheiro.model.User;
 import com.OrganizaDinheiro.OrganizaDinheiro.repositoy.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -16,52 +15,26 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    private final JwtService jwtService;
+    public Optional<User> findByPhone(String phone) {
+        return userRepository.findByPhone(phone);
+    }
 
-    private final PasswordEncoder passwordEncoder;
-
-
-    public User registerUser(RegisterRequest request){
-
-        if (userRepository.existsByPhone(request.getPhone())){
-            throw new RuntimeException("Usuario Ja cadastrado");
+    public User createUser(String phone, String name) {
+        if (userRepository.existsByPhone(phone)) {
+            throw new RuntimeException("Usuario ja cadastrado!");
         }
         User user = new User();
-        user.setName(request.getName());
-        user.setPhone(request.getPhone());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPhone(phone);
+        user.setName(name);
+        user.setCreatedAt(LocalDateTime.now());
 
-        System.out.println("Usuario registrado!");
         return userRepository.save(user);
     }
 
-    public boolean existsByPhone(String phone){
-        if (userRepository.existsByPhone(phone)){
-            System.out.println("telefone Ja exite no sistema");
-            return userRepository.existsByPhone(phone);
 
-        }else {
-            throw new RuntimeException("telefone nao encontrado");
-        }
-    }
+    public User findUserByPhone(String phone) {
 
-    public String validateLoginAndPassword(LoginRequest loginRequest){
-
-        if (userRepository.findByPhone(loginRequest.getPhone()).isEmpty()){
-          throw new RuntimeException("Usuario nao encontrado");
-       }
-
-        User user = userRepository.findByPhone(loginRequest.getPhone()).get();
-
-       if (passwordEncoder.matches(loginRequest.getPassword(),user.getPassword())){
-           return jwtService.generateToken(user.getId());
-       }else  {
-           throw new RuntimeException("Senha incorreta");
-       }
-    }
-
-    public Optional<User> findUserByPhone(String phone,User user){
-        Long userId = user.getId();
-        return userRepository.findByPhone(phone);
+        return userRepository.findByPhone(phone)
+                .orElseThrow(() -> new RuntimeException("Usuario nao encontrado!"));
     }
 }

@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface CodeOtpRepository extends JpaRepository<CodeOtp, Long> {
 
-    Optional<CodeOtp> findTopByTelefoneOrderByExpiraEmDesc(String phone);
+    Optional<CodeOtp> findTopByPhoneOrderByDateTimeDesc(String phone);
 }

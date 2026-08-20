@@ -1,57 +1,68 @@
 package com.OrganizaDinheiro.OrganizaDinheiro.security;
 
 import com.OrganizaDinheiro.OrganizaDinheiro.service.JwtService;
-import jakarta.servlet.*;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-
+import java.io.IOException;
 import java.util.List;
 
-public class JwtFilter implements Filter {
+@Component
+@RequiredArgsConstructor
+public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
-    // INJETA SERVIÇO PRA VALIDAR TOKEN
-    public JwtFilter(JwtService jwtService) {
-        this.jwtService = jwtService;
-    }
-
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws java.io.IOException, ServletException {
-        HttpServletRequest req = (HttpServletRequest) request;
-        jakarta.servlet.http.HttpServletResponse res = (jakarta.servlet.http.HttpServletResponse) response;
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
 
-        //PEGA O HEADER AUTHORIZATION
-        String header = req.getHeader("Authorization");
+        String header = request.getHeader("Authorization");
 
-        // EXECUTA SE EXISTIR TOKEN VALIDO NO FORMATO DE BEARER
-        if (header != null && header.startsWith("Bearer ")) {
-            try {
-                String token = header.substring(7);
-                String userId = jwtService.validateToken(token);
-
-                // DEFINE PERMISSOES DO USUSARIO (ROLE BASICA)
-                var authorities = List.of(new SimpleGrantedAuthority("USER"));
-
-                //CRIA UM OBJETO QUE REPRESENTA USUARIO AUTENTICADO
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(userId,null, authorities);
-
-                //REGISTRA USUARIO NO CONTEXTO DO SPRING(ESSENCIAL)
-                SecurityContextHolder.getContext().setAuthentication(auth);
-
-            } catch (Exception e) {
-                res.setStatus(401); // RETORNA NAO AUTORIZADO
-                res.getWriter().write("Token invalido ou expirado");
-                return; //PARA EXECUCAO
-            }
+        if (header == null || !header.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
         }
-        // CONTINUA O FLUXO DA REQUISICAO
-        chain.doFilter(request, response);
 
+        String token = header.substring(7);
+
+        try {
+            String userId = jwtService.validateToken(token);
+
+            Long authenticatedUserId = Long.valueOf(userId);
+
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            authenticatedUserId,
+                            null,
+                            List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                    );
+
+            SecurityContextHolder
+                    .getContext()
+                    .setAuthentication(authentication);
+
+            filterChain.doFilter(request, response);
+
+        } catch (Exception exception) {
+            SecurityContextHolder.clearContext();
+
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write(
+                    "{\"message\":\"Token inválido ou expirado\"}"
+            );
+        }
     }
 }
-

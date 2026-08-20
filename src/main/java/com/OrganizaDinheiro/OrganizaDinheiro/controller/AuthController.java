@@ -1,8 +1,9 @@
 package com.OrganizaDinheiro.OrganizaDinheiro.controller;
 
-import com.OrganizaDinheiro.OrganizaDinheiro.dto.LoginRequest;
-import com.OrganizaDinheiro.OrganizaDinheiro.dto.RegisterRequest;
+import com.OrganizaDinheiro.OrganizaDinheiro.dto.CompleteRegistrationRequest;
 import com.OrganizaDinheiro.OrganizaDinheiro.dto.SendCodeRequest;
+import com.OrganizaDinheiro.OrganizaDinheiro.dto.ValidateCodeRequest;
+import com.OrganizaDinheiro.OrganizaDinheiro.dto.ValidateCodeResponse;
 import com.OrganizaDinheiro.OrganizaDinheiro.model.User;
 import com.OrganizaDinheiro.OrganizaDinheiro.repositoy.UserRepository;
 import com.OrganizaDinheiro.OrganizaDinheiro.service.JwtService;
@@ -13,6 +14,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -36,30 +39,61 @@ public class AuthController {
     }
 
     @PostMapping("/validate-code")
-    public ResponseEntity<String> validateCode(@RequestBody SendCodeRequest sendCodeRequest) {
-        String phone = sendCodeRequest.getPhone();
-        String code = sendCodeRequest.getCode();
+    public ResponseEntity<ValidateCodeResponse> validateCode(@RequestBody ValidateCodeRequest  validateCodeRequest) {
 
-        if (otpService.validateCode(phone, code)) {
-           User user = userRepository.findByPhone(phone)
-                   .orElseThrow(() -> new RuntimeException("Usuario nao encontrado"));
-           String token = jwtService.generateToken(user.getId());
-            return ResponseEntity.status(200).body(token);
+        String phone = validateCodeRequest.getPhone();
+        String code = validateCodeRequest.getCode();
+
+        boolean valid = otpService.validateCode(phone, code);
+
+        if (!valid) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ValidateCodeResponse(
+                            false,
+                            "Código inválido ou expirado",
+                            null
+                    ));
         }
-        return ResponseEntity.status(401).build();
+
+        Optional<User> optionalUser =
+                userRepository.findByPhone(phone);
+
+        if (optionalUser.isPresent()) {
+
+            User user = optionalUser.get();
+
+            String token = jwtService.generateToken(user.getId());
+
+            return ResponseEntity.ok(
+                    new ValidateCodeResponse(
+                            true,
+                            "Login realizado com sucesso",
+                            token
+                    )
+            );
+        }
+        return ResponseEntity.ok(
+                new ValidateCodeResponse(
+                        false,
+                        "Telefone confirmado Informe seu nome.",
+                        null
+                )
+        );
     }
+    @PostMapping("/complete-registration")
+    public ResponseEntity<String> completeRegistration(
+            @RequestBody CompleteRegistrationRequest request) {
 
-    @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody RegisterRequest registerRequest){
-        userService.registerUser(registerRequest);
-        return ResponseEntity.status(201).body("Registro realizado com sucesso");
+        User user = userService.createUser(
+                request.getPhone(),
+                request.getName()
+        );
+
+        String token =
+                jwtService.generateToken(user.getId());
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(token);
+
     }
-
-
-    @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody LoginRequest loginRequest){
-        String token = userService.validateLoginAndPassword(loginRequest);
-        return ResponseEntity.status(200).body(token);
-    }
-
 }

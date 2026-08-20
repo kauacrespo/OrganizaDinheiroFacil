@@ -37,7 +37,7 @@ public class OtpService {
     public boolean validateCode(String phone, String code){
 
         //COMPARA O CODIGO DIGITADO E VERIFICA SE NAO EXPIROU
-        return repository.findTopByTelefoneOrderByExpiraEmDesc(phone)
+        return repository.findTopByPhoneOrderByDateTimeDesc(phone)
                 .filter(o -> o.getCode().equals(code))
                 .filter(o -> o.getDateTime().isAfter(LocalDateTime.now()))
                 .isPresent();
