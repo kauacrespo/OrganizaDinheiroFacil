@@ -1,6 +1,7 @@
 package com.OrganizaDinheiro.OrganizaDinheiro.service;
 
 import com.OrganizaDinheiro.OrganizaDinheiro.dto.ExpenseRequest;
+import com.OrganizaDinheiro.OrganizaDinheiro.exception.ExpenseNotFoundException;
 import com.OrganizaDinheiro.OrganizaDinheiro.model.Category;
 import com.OrganizaDinheiro.OrganizaDinheiro.model.Expense;
 import com.OrganizaDinheiro.OrganizaDinheiro.model.User;
@@ -22,7 +23,7 @@ public class ExpenseService {
     private User findUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() ->
-                        new RuntimeException("Usuário não encontrado"));
+                        new ExpenseNotFoundException(404, "Usuario nao encontrado"));
     }
 
     private Expense findExpenseForUser(Long expenseId, Long userId) {
@@ -30,9 +31,7 @@ public class ExpenseService {
                 .filter(expense ->
                         expense.getUser().getId().equals(userId))
                 .orElseThrow(() ->
-                        new RuntimeException(
-                                "Despesa não encontrada para este usuário"
-                        ));
+                        new ExpenseNotFoundException(404, "Despesa nao encontrada para este usuario"));
     }
 
     public List<Expense> getExpenses(Long userId) {
@@ -67,7 +66,7 @@ public class ExpenseService {
         expenseRepository.delete(expense);
     }
 
-    public Expense createExpense(Long userId, ExpenseRequest request) {
+    public Expense  createExpense(Long userId, ExpenseRequest request) {
 
         User user = findUser(userId);
 

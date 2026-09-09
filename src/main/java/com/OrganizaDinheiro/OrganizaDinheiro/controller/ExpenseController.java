@@ -49,9 +49,14 @@ public class ExpenseController {
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<Expense> updateExpenseById(@PathVariable("id") Long expenseId,@Validated @RequestBody ExpenseRequest request) {
-        expenseService.updateExpenseById(expenseId,expenseId,request);
-        return ResponseEntity.status(HttpStatus.OK).build();
+    public ResponseEntity<Expense> updateExpenseById(@PathVariable("id") Long expenseId, @Validated @RequestBody ExpenseRequest request){
+        expenseService.updateExpenseById(
+                expenseId,
+                currentUserService.getCurrentUserId(),
+                request
+        );
+
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")

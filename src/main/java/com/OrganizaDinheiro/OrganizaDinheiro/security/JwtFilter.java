@@ -39,7 +39,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
         try {
             String userId = jwtService.validateToken(token);
-
             Long authenticatedUserId = Long.valueOf(userId);
 
             UsernamePasswordAuthenticationToken authentication =
@@ -53,8 +52,6 @@ public class JwtFilter extends OncePerRequestFilter {
                     .getContext()
                     .setAuthentication(authentication);
 
-            filterChain.doFilter(request, response);
-
         } catch (Exception exception) {
             SecurityContextHolder.clearContext();
 
@@ -62,7 +59,11 @@ public class JwtFilter extends OncePerRequestFilter {
             response.setContentType("application/json");
             response.getWriter().write(
                     "{\"message\":\"Token inválido ou expirado\"}"
+
             );
+
+            return;
         }
+        filterChain.doFilter(request, response);
     }
 }
