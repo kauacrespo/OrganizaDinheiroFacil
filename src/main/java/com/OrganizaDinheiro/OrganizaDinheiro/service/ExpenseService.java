@@ -1,6 +1,8 @@
 package com.OrganizaDinheiro.OrganizaDinheiro.service;
 
 import com.OrganizaDinheiro.OrganizaDinheiro.dto.ExpenseRequest;
+import java.math.BigDecimal;
+import java.time.YearMonth;
 import com.OrganizaDinheiro.OrganizaDinheiro.exception.ExpenseNotFoundException;
 import com.OrganizaDinheiro.OrganizaDinheiro.model.Category;
 import com.OrganizaDinheiro.OrganizaDinheiro.model.Expense;
@@ -80,5 +82,15 @@ public class ExpenseService {
             expense.setName(request.getName());
 
             return expenseRepository.save(expense);
+    }
+
+    public BigDecimal getMonthlyTotal(Long userid, int year, int month) {
+
+        YearMonth yearMonth = YearMonth.of(year, month);
+
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.plusMonths(1).atDay(1);
+
+        return expenseRepository.sumValueByUserAndDateRange(userid, startDate,endDate);
     }
 }

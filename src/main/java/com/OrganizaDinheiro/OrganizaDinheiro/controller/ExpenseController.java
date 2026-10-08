@@ -9,7 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import com.OrganizaDinheiro.OrganizaDinheiro.dto.MonthlyExpenseSummaryResponse;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -63,5 +65,24 @@ public class ExpenseController {
     public ResponseEntity<Expense> deleteExpenseById(@PathVariable("id") Long expenseId) {
         expenseService.deleteExpenseById(currentUserService.getCurrentUserId(),expenseId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @GetMapping("summary/month")
+    public ResponseEntity<MonthlyExpenseSummaryResponse> getMonthlySummary
+            (@RequestParam int year,
+             @RequestParam int month){
+
+        Long userid = currentUserService.getCurrentUserId();
+
+        BigDecimal total = expenseService.getMonthlyTotal(userid,year,month);
+
+        MonthlyExpenseSummaryResponse response =
+                new MonthlyExpenseSummaryResponse(
+                        year,
+                        month,
+                        total
+                );
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
