@@ -4,12 +4,14 @@ import com.OrganizaDinheiro.OrganizaDinheiro.dto.ExpenseRequest;
 import java.math.BigDecimal;
 import java.time.YearMonth;
 import com.OrganizaDinheiro.OrganizaDinheiro.exception.ExpenseNotFoundException;
+import com.OrganizaDinheiro.OrganizaDinheiro.exception.GlobalExceptionHandler;
 import com.OrganizaDinheiro.OrganizaDinheiro.model.Category;
 import com.OrganizaDinheiro.OrganizaDinheiro.model.Expense;
 import com.OrganizaDinheiro.OrganizaDinheiro.model.User;
 import com.OrganizaDinheiro.OrganizaDinheiro.repositoy.ExpenseRepository;
 import com.OrganizaDinheiro.OrganizaDinheiro.repositoy.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -85,7 +87,9 @@ public class ExpenseService {
     }
 
     public BigDecimal getMonthlyTotal(Long userid, int year, int month) {
-
+        if (month < 1 || month > 12) {
+            throw new IllegalArgumentException("O mês deve ter entre 1 e 12");
+        }
         YearMonth yearMonth = YearMonth.of(year, month);
 
         LocalDate startDate = yearMonth.atDay(1);

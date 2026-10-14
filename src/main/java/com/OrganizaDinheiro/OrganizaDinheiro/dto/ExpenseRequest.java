@@ -18,7 +18,7 @@ public class ExpenseRequest {
     @Size(max=100)
     private String description;
     @NotNull
-    @Min(1)
+    @DecimalMin(value = "0.0", inclusive = false)
     private BigDecimal value;
     @NotNull
     private Category category;

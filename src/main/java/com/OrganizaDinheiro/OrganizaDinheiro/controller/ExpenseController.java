@@ -1,6 +1,8 @@
 package com.OrganizaDinheiro.OrganizaDinheiro.controller;
 
 import com.OrganizaDinheiro.OrganizaDinheiro.dto.ExpenseRequest;
+import com.OrganizaDinheiro.OrganizaDinheiro.dto.ExpenseResponse;
+import com.OrganizaDinheiro.OrganizaDinheiro.mapper.ExpenseMapper;
 import com.OrganizaDinheiro.OrganizaDinheiro.model.Category;
 import com.OrganizaDinheiro.OrganizaDinheiro.model.Expense;
 import com.OrganizaDinheiro.OrganizaDinheiro.service.CurrentUserService;
@@ -28,49 +30,57 @@ public class ExpenseController {
         this.currentUserService = currentUserService;
     }
 
+    private List<ExpenseResponse> toResponseList(List<Expense> expenses) {
+        return expenses.stream()
+                .map(ExpenseMapper::toResponse)
+                .toList();
+    }
+
     @PostMapping()
-    public ResponseEntity<ExpenseRequest> createExpense(@Validated @RequestBody ExpenseRequest request) {
-        expenseService.createExpense(currentUserService.getCurrentUserId(), request);
-       return ResponseEntity.status(HttpStatus.CREATED).body(request);
+    public ResponseEntity<ExpenseResponse> createExpense(@Validated @RequestBody ExpenseRequest request) {
+       Expense expense =  expenseService.createExpense(currentUserService.getCurrentUserId(), request);
+       ExpenseResponse response = ExpenseMapper.toResponse(expense);
+       return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping()
-    public ResponseEntity<List<Expense>> getExpenses() {
-        return ResponseEntity.status(HttpStatus.OK).body(expenseService.getExpenses(currentUserService.getCurrentUserId()));
+    public ResponseEntity<List<ExpenseResponse>> getExpenses() {
+        List<Expense> expenses = expenseService.getExpenses(currentUserService.getCurrentUserId());
+        return ResponseEntity.ok(toResponseList(expenses));
     }
 
     @GetMapping("/category/{category}")
-    public ResponseEntity<List<Expense>> getExpensesByCategory(@PathVariable("category") Category category) {
-        return ResponseEntity.status(HttpStatus.OK).body(expenseService.getExpensesByCategory(currentUserService.getCurrentUserId(), category));
+    public ResponseEntity<List<ExpenseResponse>> getExpensesByCategory(@PathVariable("category") Category category) {
+        List<Expense> expenses = expenseService.getExpensesByCategory(currentUserService.getCurrentUserId(), category);
+        return ResponseEntity.status(HttpStatus.OK).body(toResponseList(expenses));
     }
 
     @GetMapping("/date/{date}")
-    public ResponseEntity<List<Expense>> getExpensesByDate(@PathVariable("date") LocalDate date) {
-        return ResponseEntity.status(HttpStatus.OK).body(expenseService.getExpensesByDate(currentUserService.getCurrentUserId(),date));
+    public ResponseEntity<List<ExpenseResponse>> getExpensesByDate(@PathVariable("date") LocalDate date) {
+        List<Expense> expenses = expenseService.getExpensesByDate(currentUserService.getCurrentUserId(), date);
+        return ResponseEntity.status(HttpStatus.OK).body(toResponseList(expenses));
     }
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<Expense> updateExpenseById(@PathVariable("id") Long expenseId, @Validated @RequestBody ExpenseRequest request){
+    public ResponseEntity<Void> updateExpenseById(@PathVariable("id") Long expenseId, @Validated @RequestBody ExpenseRequest request){
         expenseService.updateExpenseById(
                 expenseId,
                 currentUserService.getCurrentUserId(),
                 request
         );
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Expense> deleteExpenseById(@PathVariable("id") Long expenseId) {
-        expenseService.deleteExpenseById(currentUserService.getCurrentUserId(),expenseId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    public ResponseEntity<Void> deleteExpenseById(@PathVariable("id") Long expenseId) {
+        expenseService.deleteExpenseById(expenseId,currentUserService.getCurrentUserId());
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("summary/month")
-    public ResponseEntity<MonthlyExpenseSummaryResponse> getMonthlySummary
-            (@RequestParam int year,
-             @RequestParam int month){
+    public ResponseEntity<MonthlyExpenseSummaryResponse> getMonthlySummary(@RequestParam int year, @RequestParam int month){
 
         Long userid = currentUserService.getCurrentUserId();
 
