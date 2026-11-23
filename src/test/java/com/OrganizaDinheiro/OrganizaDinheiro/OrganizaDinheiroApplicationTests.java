@@ -8,6 +8,9 @@ class OrganizaDinheiroApplicationTests {
 
 	@Test
 	void contextLoads() {
+
 	}
+
+
 
 }
